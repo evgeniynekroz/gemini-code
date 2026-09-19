@@ -116,7 +116,7 @@ gemini-code
 🎯 **Текущий сбор:** **На нормальный рабочий ноутбук** (Цель: 35 000 ₽)
 
 - 🎁 **DonationAlerts:** **[donationalerts.com/r/nekrozdev](https://www.donationalerts.com/r/nekrozdev)**
-- 💎 **CryptoBot (Telegram):** Отправить через `@send` на **[@NekrozDEV](https://t.me/NekrozDEV)** в Telegram
+- 💎 **CryptoBot (USDT / TON / BTC / Любая сумма):** **[t.me/send?start=IVj4UTox7JMD](https://t.me/send?start=IVj4UTox7JMD)**
 
 ---
 
