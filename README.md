@@ -112,13 +112,11 @@ gemini-code
 
 ## ☕ Поддержать проект (Donations)
 
-Если Gemini Code помогает вам экономить время и деньги на подписках — поддержите автора! Все донаты идут на развитие утилиты и поддержание серверов-зеркал.
+Если **Gemini Code** помогает вам в работе и экономит деньги на платных подписках — поддержите автора!  
+🎯 **Текущий сбор:** **На нормальный рабочий ноутбук** (Цель: 35 000 ₽)
 
-- **Boosty:** [boosty.to/evgeniynekroz](https://boosty.to) *(добавьте вашу ссылку)*
-- **ЮMoney:** [yoomoney.ru/to/...](https://yoomoney.ru) *(добавьте ваш номер кошелька)*
-- **USDT (TRC20):** `Txxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
-- **TON:** `EQxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
-- **Bitcoin:** `bc1qxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
+- 🎁 **DonationAlerts:** **[donationalerts.com/r/nekrozdev](https://www.donationalerts.com/r/nekrozdev)**
+- 💎 **CryptoBot (Telegram):** Отправить через `@send` на **[@NekrozDEV](https://t.me/NekrozDEV)** в Telegram
 
 ---
 
