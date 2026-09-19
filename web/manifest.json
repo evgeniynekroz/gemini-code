@@ -1,0 +1,16 @@
+{
+  "name": "Gemini Code Mobile",
+  "short_name": "GeminiCode",
+  "description": "Terminal AI coding assistant for iOS and mobile browsers",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#0d1117",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

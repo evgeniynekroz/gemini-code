@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Gemini Code Mobile</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0d1117">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="terminal-container">
+    <header class="terminal-header">
+      <div class="header-left">
+        <span class="logo-badge">✦ GEMINI CODE</span>
+        <span id="modelBadge" class="status-badge">gemini-2.5-flash</span>
+      </div>
+      <button id="settingsBtn" class="icon-btn" title="Settings">⚙</button>
+    </header>
+
+    <div id="outputArea" class="output-area">
+      <div class="system-msg">
+        <pre class="ascii-logo">
+  ____ _____ __  __ ___ _   _ ___ 
+ / ___| ____|  \/  |_ _| \ | |_ _|
+| |  _|  _| | |\/| || ||  \| || | 
+| |_| | |___| |  | || || |\  || | 
+ \____|_____|_|  |_|___|_| \_|___|
+        </pre>
+        <p>⚡ <strong>Gemini Code Mobile Terminal</strong></p>
+        <p class="dim">Works directly in iOS Safari or PWA. 100% Client-Side. No server required.</p>
+        <p class="dim">Get free key at: <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: #58a6ff;">aistudio.google.com</a></p>
+      </div>
+    </div>
+
+    <!-- Quick Action Bar -->
+    <div class="quick-bar">
+      <button class="quick-chip" onclick="quickCommand('/quota')">/quota</button>
+      <button class="quick-chip" onclick="quickCommand('/doctor')">/doctor</button>
+      <button class="quick-chip" onclick="quickCommand('/subagent planner')">Planner</button>
+      <button class="quick-chip" onclick="quickCommand('/subagent coder')">Coder</button>
+      <button class="quick-chip" onclick="quickCommand('/clear')">/clear</button>
+    </div>
+
+    <form id="inputForm" class="input-form">
+      <span class="prompt-symbol">❯</span>
+      <input type="text" id="userInput" placeholder="Ask a question or enter command..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <button type="submit" id="sendBtn" class="send-btn">▲</button>
+    </form>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="modal hidden">
+    <div class="modal-content">
+      <h3>⚙ Settings</h3>
+      <label>Google AI Studio API Key:
+        <input type="password" id="apiKeyInput" placeholder="AIzaSy...">
+      </label>
+      <label>Model:
+        <select id="modelSelect">
+          <option value="gemini-2.5-flash">Gemini 2.5 Flash (15 RPM / 1M context)</option>
+          <option value="gemini-2.5-pro">Gemini 2.5 Pro (2 RPM / 2M context)</option>
+          <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+          <option value="gemini-2.0-flash-thinking-exp">Gemini 2.0 Thinking</option>
+        </select>
+      </label>
+      <label>Custom Proxy / Reverse Proxy URL (optional for RU):
+        <input type="text" id="proxyUrlInput" placeholder="https://api.gemini-proxy.ru">
+      </label>
+      <div class="modal-actions">
+        <button id="saveSettingsBtn" class="primary-btn">Save</button>
+        <button id="closeSettingsBtn" class="secondary-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
