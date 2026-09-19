@@ -1,15 +1,10 @@
 """
-Interactive terminal prompter with autocompletion and command history.
+Interactive terminal prompter with autocompletion, command history, and async execution.
 """
 
 import sys
+import asyncio
 from pathlib import Path
-from prompt_toolkit import PromptSession
-from prompt_toolkit.history import FileHistory
-from prompt_toolkit.completion import WordCompleter
-from prompt_toolkit.styles import Style
-
-from .symbols import sym
 from ..config import CONFIG_DIR
 
 HISTORY_FILE = CONFIG_DIR / "history.txt"
@@ -36,16 +31,19 @@ SLASH_COMMANDS = [
     "/quit",
 ]
 
-completer = WordCompleter(SLASH_COMMANDS, ignore_case=True, match_middle=False)
-
-style = Style.from_dict({
-    "prompt": "cyan bold",
-})
-
 class Prompter:
     def __init__(self):
         CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+        self.session = None
         try:
+            from prompt_toolkit import PromptSession
+            from prompt_toolkit.history import FileHistory
+            from prompt_toolkit.completion import WordCompleter
+            from prompt_toolkit.styles import Style
+
+            completer = WordCompleter(SLASH_COMMANDS, ignore_case=True, match_middle=False)
+            style = Style.from_dict({"prompt": "cyan bold"})
+
             self.session = PromptSession(
                 history=FileHistory(str(HISTORY_FILE)),
                 completer=completer,
@@ -54,17 +52,22 @@ class Prompter:
         except Exception:
             self.session = None
 
-    def get_input(self, placeholder: str = "") -> str:
-        prompt_marker = f"{sym.USER.strip()} "
+    async def get_input(self, placeholder: str = "") -> str:
+        prompt_marker = "> "
         if self.session:
             try:
-                return self.session.prompt(prompt_marker)
+                # MUST USE prompt_async inside active asyncio loop!
+                return await self.session.prompt_async(prompt_marker)
             except (KeyboardInterrupt, EOFError):
                 return "/exit"
-        else:
-            try:
-                return input(prompt_marker)
-            except (KeyboardInterrupt, EOFError):
-                return "/exit"
+            except Exception:
+                # If prompt_toolkit fails, disable and fallback
+                self.session = None
+
+        # Bulletproof fallback using built-in input in thread pool
+        try:
+            return await asyncio.to_thread(input, prompt_marker)
+        except (KeyboardInterrupt, EOFError):
+            return "/exit"
 
 prompter = Prompter()

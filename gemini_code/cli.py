@@ -10,7 +10,6 @@ import asyncio
 import webbrowser
 from pathlib import Path
 from rich.table import Table
-from rich.panel import Panel
 from rich.text import Text
 
 from .config import config, CONFIG_DIR
@@ -54,10 +53,7 @@ def set_terminal_title(title: str = "Gemini Code"):
         sys.stdout.flush()
 
 def verify_workspace_trust() -> bool:
-    """
-    Ensure user trusts the current working directory.
-    Claude Code style workspace security check.
-    """
+    """Ensure user trusts the current working directory."""
     cwd = os.getcwd()
     trusted_file = CONFIG_DIR / "trusted_workspaces.json"
     trusted_dirs = []
@@ -72,49 +68,27 @@ def verify_workspace_trust() -> bool:
     if cwd in trusted_dirs:
         return True
 
+    console.print()
     if config.language == "ru":
-        title = "[!] ПРОВЕРКА БЕЗОПАСНОСТИ РАБОЧЕЙ ОБЛАСТИ"
-        content = (
-            f"Текущая папка: [bold cyan]{cwd}[/bold cyan]\n\n"
-            f"Вы уверены, что доверяете эту рабочую область для Gemini Code?\n"
-            f"ИИ-ассистент имеет доступ к чтению, созданию, изменению файлов\n"
-            f"и выполнению консольных команд в этой папке.\n"
-            f"[bold yellow]Внимание:[/bold yellow] Он может ошибаться и что-то сломать.\n\n"
-            f"Доверять этой рабочей области? [y/n] (по умолчанию: y): "
-        )
+        console.print(f"  [bold yellow][!] Проверка безопасности рабочей области[/bold yellow]")
+        console.print(f"  Папка проекта: [bold cyan]{cwd}[/bold cyan]")
+        console.print(f"  [dim]ИИ-ассистент сможет читать и изменять файлы в этой папке.[/dim]")
+        prompt = "\n  Доверять этой папке? [y/n] (Enter = да): "
     else:
-        title = "[!] WORKSPACE TRUST SECURITY CHECK"
-        content = (
-            f"Current directory: [bold cyan]{cwd}[/bold cyan]\n\n"
-            f"Do you trust this workspace for Gemini Code?\n"
-            f"The AI assistant can read, modify, create files and execute\n"
-            f"terminal commands in this directory.\n"
-            f"[bold yellow]Warning:[/bold yellow] It can make mistakes and alter files.\n\n"
-            f"Trust this workspace? [y/n] (default: y): "
-        )
-
-    panel = Panel(
-        content,
-        title=title,
-        border_style="yellow",
-        box=get_box(),
-        padding=(1, 2),
-    )
-    console.print(panel)
+        console.print(f"  [bold yellow][!] Workspace Security Trust Check[/bold yellow]")
+        console.print(f"  Workspace: [bold cyan]{cwd}[/bold cyan]")
+        console.print(f"  [dim]The AI assistant can read and modify files in this directory.[/dim]")
+        prompt = "\n  Trust this directory? [y/n] (Enter = yes): "
 
     try:
-        ans = input("> ").strip().lower()
+        ans = input(prompt).strip().lower()
     except (KeyboardInterrupt, EOFError):
         ans = "n"
 
     if ans in ("n", "no", "нет", "н"):
-        if config.language == "ru":
-            console.print("\n[red][X] Запуск отменен: рабочая область не подтверждена пользователем.[/red]")
-        else:
-            console.print("\n[red][X] Launch aborted: workspace not trusted by user.[/red]")
+        console.print("\n[red]Запуск отменен: рабочая область не подтверждена.[/red]")
         sys.exit(0)
 
-    # Save to trusted list
     trusted_dirs.append(cwd)
     try:
         with open(trusted_file, "w", encoding="utf-8") as f:
@@ -125,29 +99,20 @@ def verify_workspace_trust() -> bool:
     return True
 
 async def run_onboarding():
-    """First-run setup wizard: language selection and fast API key save without network probing."""
+    """First-run setup wizard: language selection and fast API key save."""
     setup_windows_console()
     set_terminal_title("Gemini Code - Setup")
     clear_screen()
 
-    # 1. Language selection panel (pure text, no emojis)
-    welcome_panel = Panel(
-        Text.assemble(
-            ("GEMINI CODE\n", "bold cyan"),
-            ("Терминальный ИИ-ассистент разработчика (v1.0.0)\n\n", "bold green"),
-            ("Выберите язык интерфейса / Select language:\n", "bold white"),
-            ("  [1] Русский (по умолчанию)\n", "cyan"),
-            ("  [2] English", "cyan"),
-        ),
-        border_style="cyan",
-        box=get_box(),
-        title="[bold cyan]Добро пожаловать / Welcome[/bold cyan]",
-        padding=(1, 2),
-    )
-    console.print(welcome_panel)
+    console.print()
+    console.print("  [bold cyan]Gemini Code[/bold cyan] [dim](v1.0.0)[/dim]")
+    console.print("  [dim]Терминальный ИИ-ассистент разработчика[/dim]\n")
+    console.print("  Выберите язык / Select language:")
+    console.print("    [1] Русский (по умолчанию)")
+    console.print("    [2] English")
 
     try:
-        lang_choice = input("\nВыбор / Select [1/2] (1): ").strip()
+        lang_choice = input("\n  Выбор / Select [1/2] (1): ").strip()
     except (KeyboardInterrupt, EOFError):
         sys.exit(0)
 
@@ -158,53 +123,31 @@ async def run_onboarding():
         config.set("language", "ru")
         i18n.set_lang("ru")
 
-    # Wipe screen immediately after language selection
     clear_screen()
 
-    # Open Google AI Studio page automatically in browser
     try:
         webbrowser.open("https://aistudio.google.com/app/apikey")
     except Exception:
         pass
 
-    # 2. Clean authorization panel
+    console.print()
     if config.language == "ru":
-        auth_text = Text.assemble(
-            ("Авторизация Google Gemini (AI Studio)\n\n", "bold cyan"),
-            ("Страница получения бесплатного ключа открыта в вашем браузере:\n", "white"),
-            ("-> https://aistudio.google.com/app/apikey\n\n", "bold underline cyan"),
-            ("1. Войдите с вашим Google-аккаунтом\n", "dim white"),
-            ("2. Нажмите кнопку ", "dim white"),
-            ("«Create API key»\n", "bold yellow"),
-            ("3. Скопируйте созданный ключ (он 100% бесплатный, карты не нужны)\n", "dim white"),
-            ("4. Вставьте ключ в строку ниже и нажмите Enter\n", "dim white"),
-        )
-        auth_title = "[bold cyan]Первоначальная настройка Gemini Code[/bold cyan]"
-        prompt_label = "\nВведите ваш API-ключ Google AI Studio: "
+        console.print("  [bold cyan]Авторизация Google Gemini (AI Studio)[/bold cyan]")
+        console.print("  Страница получения бесплатного ключа открыта в вашем браузере:")
+        console.print("  [underline cyan]https://aistudio.google.com/app/apikey[/underline cyan]\n")
+        console.print("  1. Войдите под своим Google-аккаунтом")
+        console.print("  2. Нажмите синюю кнопку [bold yellow]Create API key[/bold yellow]")
+        console.print("  3. Скопируйте ключ и вставьте ниже (он 100% бесплатный, карты не нужны)")
+        prompt_label = "\n  Введите ваш API-ключ: "
     else:
-        auth_text = Text.assemble(
-            ("Google Gemini (AI Studio) Authorization\n\n", "bold cyan"),
-            ("The API key generation page has been opened in your browser:\n", "white"),
-            ("-> https://aistudio.google.com/app/apikey\n\n", "bold underline cyan"),
-            ("1. Sign in with your Google account\n", "dim white"),
-            ("2. Click the button ", "dim white"),
-            ("«Create API key»\n", "bold yellow"),
-            ("3. Copy the generated key (100% free tier, no credit card required)\n", "dim white"),
-            ("4. Paste the key in the prompt below and press Enter\n", "dim white"),
-        )
-        auth_title = "[bold cyan]Initial Setup for Gemini Code[/bold cyan]"
-        prompt_label = "\nEnter your Google AI Studio API key: "
+        console.print("  [bold cyan]Google Gemini (AI Studio) Authorization[/bold cyan]")
+        console.print("  The API key generation page has been opened in your browser:")
+        console.print("  [underline cyan]https://aistudio.google.com/app/apikey[/underline cyan]\n")
+        console.print("  1. Sign in with your Google account")
+        console.print("  2. Click the blue button [bold yellow]Create API key[/bold yellow]")
+        console.print("  3. Copy the key and paste below (100% free, no credit card required)")
+        prompt_label = "\n  Enter your API key: "
 
-    auth_panel = Panel(
-        auth_text,
-        border_style="cyan",
-        box=get_box(),
-        title=auth_title,
-        padding=(1, 2),
-    )
-    console.print(auth_panel)
-
-    # 3. Prompt for key (Save immediately, ZERO network probing during setup!)
     while not config.api_key:
         try:
             api_key = input(prompt_label).strip().strip('"').strip("'")
@@ -216,7 +159,7 @@ async def run_onboarding():
             continue
 
         config.set("api_key", api_key)
-        console.print(f"[bold green]{sym.SUCCESS} {t('api_key_saved')}[/bold green]\n")
+        console.print("  [green][OK] API-ключ сохранен![/green]\n")
         break
 
 def show_help():
@@ -343,18 +286,14 @@ async def main_loop():
     clear_screen()
     cwd = os.getcwd()
     set_terminal_title(f"Gemini Code - {os.path.basename(cwd)}")
-    print_banner()
-    print_status_bar()
-
-    console.print(f"[dim white][Папка проекта]: [bold cyan]{cwd}[/bold cyan][/dim white]")
-    console.print(f"[dim][Инфо]: Введите задачу своими словами или [cyan]/help[/cyan] для списка команд (выход: [cyan]/exit[/cyan])[/dim]\n")
+    print_banner(cwd)
 
     client = GeminiClient()
     agent = Agent(client)
 
     while True:
         try:
-            user_input = prompter.get_input()
+            user_input = await prompter.get_input()
             if not user_input:
                 continue
 
@@ -445,10 +384,7 @@ async def main_loop():
             elif cmd in ("/clear", "/cls"):
                 agent.context.clear()
                 clear_screen()
-                print_banner()
-                print_status_bar()
-                console.print(f"[dim white][Папка проекта]: [bold cyan]{os.getcwd()}[/bold cyan][/dim white]")
-                console.print(f"[dim][Инфо]: Введите запрос или [cyan]/help[/cyan] для списка команд[/dim]\n")
+                print_banner(os.getcwd())
                 print_info(t("context_cleared"))
 
             else:
@@ -466,6 +402,8 @@ async def main_loop():
                 print_error("Ошибка сети: Google блокирует запросы из вашего региона. Включите VPN или настройте прокси через команду /proxy.")
             else:
                 print_error(f"Ошибка выполнения: {err_str}")
+            # Ensure no runaway loop on unexpected exceptions
+            await asyncio.sleep(0.5)
 
 def main():
     asyncio.run(main_loop())
