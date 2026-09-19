@@ -2,6 +2,8 @@ name: Build & Release Multiplatform Binaries
 
 on:
   push:
+    branches:
+      - main
     tags:
       - 'v*'
   workflow_dispatch:
@@ -25,7 +27,7 @@ jobs:
             artifact_name: gemini-code-windows-x86.exe
             python_arch: x86
           - os: macos-latest
-            target: macos-universal
+            target: macos
             artifact_name: gemini-code-macos
           - os: ubuntu-latest
             target: linux-x64
@@ -47,19 +49,15 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
-      - name: Build executable with PyInstaller
-        run: |
-          pyinstaller --onefile --name gemini-code gemini_code/cli.py
-
-      - name: Rename artifact (Windows)
+      - name: Build executable with PyInstaller (Windows)
         if: runner.os == 'Windows'
         run: |
-          Move-Item dist/gemini-code.exe dist/${{ matrix.artifact_name }}
+          pyinstaller --onefile --collect-all gemini_code --name ${{ matrix.artifact_name }} gemini_code/cli.py
 
-      - name: Rename artifact (Unix)
+      - name: Build executable with PyInstaller (Unix)
         if: runner.os != 'Windows'
         run: |
-          mv dist/gemini-code dist/${{ matrix.artifact_name }}
+          pyinstaller --onefile --collect-all gemini_code --name ${{ matrix.artifact_name }} gemini_code/cli.py
           chmod +x dist/${{ matrix.artifact_name }}
 
       - name: Upload Artifact
@@ -72,8 +70,10 @@ jobs:
     name: Create GitHub Release
     needs: build
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -81,15 +81,27 @@ jobs:
 
       - name: Flatten artifacts
         run: |
-          mkdir final-assets
-          find release-artifacts -type f -exec mv {} final-assets/ \;
+          mkdir -p final-assets
+          find release-artifacts -type f -exec cp {} final-assets/ \;
           ls -la final-assets/
 
-      - name: Create GitHub Release
+      - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: final-assets/*
-          name: Gemini Code Release ${{ github.ref_name }}
+          tag_name: v1.0.0
+          name: Gemini Code v1.0.0 (Windows 64/32-bit, macOS, Linux)
+          body: |
+            ## ⚡ Gemini Code v1.0.0 Release
+            
+            ### 📦 Готовые сборки для скачивания:
+            - 🪟 **[gemini-code-windows-x64.exe](https://github.com/evgeniynekroz/gemini-code/releases/download/v1.0.0/gemini-code-windows-x64.exe)** — Windows 64-бит
+            - 🪟 **[gemini-code-windows-x86.exe](https://github.com/evgeniynekroz/gemini-code/releases/download/v1.0.0/gemini-code-windows-x86.exe)** — Windows 32-бит
+            - 🍏 **[gemini-code-macos](https://github.com/evgeniynekroz/gemini-code/releases/download/v1.0.0/gemini-code-macos)** — Apple macOS
+            - 🐧 **[gemini-code-linux-x64](https://github.com/evgeniynekroz/gemini-code/releases/download/v1.0.0/gemini-code-linux-x64)** — Linux
+            
+            ### ☕ Поддержать автора:
+            - **DonationAlerts:** https://www.donationalerts.com/r/nekrozdev
+            - **CryptoBot:** `@send @NekrozDEV` в Telegram
           draft: false
           prerelease: false
-          generate_release_notes: true
