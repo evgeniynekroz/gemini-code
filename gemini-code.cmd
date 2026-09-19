@@ -1,8 +1,10 @@
 @echo off
 setlocal
 chcp 65001 >nul
-python -m gemini_code.cli %*
-if %ERRORLEVEL% NEQ 0 (
-    py -m gemini_code.cli %*
+where python >nul 2>nul
+if %ERRORLEVEL% EQU 0 (
+    python -m gemini_code.cli %*
+    exit /b %ERRORLEVEL%
 )
-endlocal
+py -m gemini_code.cli %*
+exit /b %ERRORLEVEL%
