@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gemini-code-cli"
+version = "1.0.0"
+authors = [
+  { name="evgeniynekroz" },
+]
+description = "⚡ Free, open-source terminal coding assistant inspired by Claude Code, powered by Google Gemini"
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Environment :: Console",
+]
+dependencies = [
+    "rich>=13.7.0",
+    "prompt_toolkit>=3.0.43",
+    "httpx[socks]>=0.27.0",
+    "pydantic>=2.6.0",
+]
+
+[project.scripts]
+gemini-code = "gemini_code.cli:main"
+gemcode = "gemini_code.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["gemini_code*"]
