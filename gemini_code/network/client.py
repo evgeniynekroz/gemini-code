@@ -1,6 +1,6 @@
 """
 Asynchronous Google Gemini REST and SSE streaming client.
-Supports custom base URLs, HTTP/SOCKS5 proxies, and function calling.
+Supports custom base URLs, HTTP/SOCKS5 proxies, thinking/reasoning parts, and function calling.
 """
 
 import json
@@ -9,40 +9,74 @@ import httpx
 
 from .connectivity import diagnose_connection, ConnectionResult
 from ..config import config
+from ..quota.models import resolve_model_id
+
+class GeoBlockedException(Exception):
+    """Raised when Google AI Studio blocks request due to Russian IP / geo-location."""
+    pass
 
 class GeminiClient:
     def __init__(self, api_key: Optional[str] = None):
         self.api_key = api_key or config.api_key
         self._conn_result: Optional[ConnectionResult] = None
-        self._init_connection()
+        self.reconnect()
 
-    def _init_connection(self):
-        """Initialize connection route based on config and network tests."""
-        custom_proxy = config.custom_proxy_url if config.proxy_mode == "custom" else ""
+    def reconnect(self):
+        """Re-diagnose network route and configure HTTP client."""
+        custom_proxy = config.custom_proxy_url
+        custom_base = config.custom_base_url
         self._conn_result = diagnose_connection(
             preferred_mode=config.proxy_mode,
             custom_proxy=custom_proxy,
+            custom_base_url=custom_base,
+            api_key=self.api_key,
         )
 
+    @property
+    def connection_status(self) -> Optional[ConnectionResult]:
+        return self._conn_result
+
     def get_http_client(self) -> httpx.AsyncClient:
-        kwargs: Dict[str, Any] = {"timeout": 60.0}
+        kwargs: Dict[str, Any] = {"timeout": 90.0, "follow_redirects": True}
         if self._conn_result and self._conn_result.proxy_url:
             kwargs["proxy"] = self._conn_result.proxy_url
+        elif config.custom_proxy_url:
+            kwargs["proxy"] = config.custom_proxy_url
         return httpx.AsyncClient(**kwargs)
 
     @property
     def base_url(self) -> str:
-        if self._conn_result:
-            return self._conn_result.endpoint.rstrip("/")
-        return "https://generativelanguage.googleapis.com"
+        url = "https://generativelanguage.googleapis.com"
+        if config.custom_base_url:
+            url = config.custom_base_url.rstrip("/")
+        elif self._conn_result and self._conn_result.endpoint:
+            url = self._conn_result.endpoint.rstrip("/")
+        if url.endswith("/v1beta"):
+            url = url[:-7]
+        return url
+
+    def _get_headers(self) -> Dict[str, str]:
+        headers = {
+            "Content-Type": "application/json",
+            "User-Agent": "GeminiCode/1.0",
+        }
+        if self.api_key:
+            headers["x-goog-api-key"] = self.api_key
+        return headers
 
     async def list_models(self) -> List[Dict[str, Any]]:
         """Fetch list of available models from Google AI Studio."""
         url = f"{self.base_url}/v1beta/models?key={self.api_key}"
         async with self.get_http_client() as client:
-            resp = await client.get(url)
+            resp = await client.get(url, headers=self._get_headers())
             if resp.status_code != 200:
-                raise RuntimeError(f"Error fetching models ({resp.status_code}): {resp.text}")
+                text = resp.text
+                if "User location is not supported" in text or "FAILED_PRECONDITION" in text:
+                    raise GeoBlockedException(
+                        "Google блокирует доступ из вашего региона (User location is not supported). "
+                        "Включите VPN/прокси или настройте адрес через команду /proxy."
+                    )
+                raise RuntimeError(f"Error fetching models ({resp.status_code}): {text}")
             data = resp.json()
             return data.get("models", [])
 
@@ -55,10 +89,12 @@ class GeminiClient:
         temperature: float = 0.2,
     ) -> AsyncGenerator[Dict[str, Any], None]:
         """
-        Stream response tokens and function calls from Gemini using Server-Sent Events (SSE).
+        Stream response tokens, thinking blocks, and function calls from Gemini using Server-Sent Events (SSE).
         """
-        # Ensure model has 'models/' prefix
-        model_name = model if model.startswith("models/") else f"models/{model}"
+        # Resolve any alias (e.g. 'flash' -> 'gemini-2.0-flash')
+        resolved_model = resolve_model_id(model)
+        clean_model = resolved_model.strip().replace("models/", "")
+        model_name = f"models/{clean_model}"
         url = f"{self.base_url}/v1beta/{model_name}:streamGenerateContent?alt=sse&key={self.api_key}"
 
         payload: Dict[str, Any] = {
@@ -77,10 +113,17 @@ class GeminiClient:
             payload["tools"] = tools
 
         async with self.get_http_client() as client:
-            async with client.stream("POST", url, json=payload, headers={"Content-Type": "application/json"}) as resp:
+            async with client.stream("POST", url, json=payload, headers=self._get_headers()) as resp:
                 if resp.status_code != 200:
-                    error_body = await resp.aread()
-                    raise RuntimeError(f"Gemini API error ({resp.status_code}): {error_body.decode('utf-8', errors='replace')}")
+                    error_bytes = await resp.aread()
+                    error_str = error_bytes.decode("utf-8", errors="replace")
+                    lower_err = error_str.lower()
+                    if "user location is not supported" in lower_err or "failed_precondition" in lower_err:
+                        raise GeoBlockedException(
+                            "Google блокирует запросы из вашего региона (User location is not supported). "
+                            "Настройте прокси или бесплатный Cloudflare Worker через команду /proxy."
+                        )
+                    raise RuntimeError(f"Gemini API error ({resp.status_code}): {error_str}")
 
                 buffer = ""
                 async for chunk in resp.aiter_text():
