@@ -1,4 +1,4 @@
-# ⚡ Gemini Code
+# Gemini Code (geminicode)
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.9+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.9+">
@@ -16,151 +16,144 @@
 ```
 
 > **Бесплатный терминальный ИИ-ассистент программиста с открытым исходным кодом.**  
-> Вдохновлен **Claude Code**, но работает на **Google Gemini** через бесплатный API-ключ Google AI Studio. Включает автономных субагентов, живой трекер квот, защиту от битых символов в Windows CMD и автоматический обход блокировок в РФ.
+> Вдохновлен **Claude Code**, но работает на **Google Gemini** через бесплатный API-ключ Google AI Studio. Запускается глобальной командой `geminicode` в любой папке вашего компьютера. Включает проверку доверия к рабочей области, автономных субагентов, трекер квот и безопасный вывод в Windows CMD.
 
-[English Documentation Below](#-english-overview)
-
----
-
-## 🌟 Главные фичи
-
-- 💸 **Абсолютно бесплатно:** Работает через официальный бесплатный ключ [Google AI Studio](https://aistudio.google.com/app/apikey) (15 запросов в минуту и 1,500 запросов в день на моделях Flash с окном в 1 миллион токенов!).
-- 🤖 **Функционал уровня Claude Code:**
-  - `View`: чтение файлов с номерами строк.
-  - `Edit`: точечная правка файлов с цветным **Git-style Diff** (зеленый `+`, красный `-`) перед сохранением.
-  - `FileCreate` и `FileDelete`: безопасное создание и удаление файлов.
-  - `Bash`: запуск терминальных команд (PowerShell / Bash) с запросом подтверждения `[y/n/a]`.
-  - `Glob` и `Grep`: мгновенный поиск файлов и строк по всему проекту.
-- 👥 **Автономные субагенты (`/subagent`):**
-  - **Planner / Architect:** исследует проект и составляет детальный пошаговый план без правок кода.
-  - **Coder:** специализированный агент для написания и рефакторинга кода.
-  - **Reviewer:** аудит кода на баги, уязвимости (OWASP) и стиль.
-  - **Tester:** автоматическое написание и прогон юнит-тестов.
-- 📊 **Живой HUD квот и лимитов:** Прямо в терминале отображает, сколько запросов в минуту (RPM) и день (RPD) израсходовано и сколько осталось до сброса.
-- 🌐 **Умная сеть и обход блокировок для РФ:**
-  1. *Прямой пинг:* если у вас уже есть VPN — работает напрямую без задержек.
-  2. *Автопоиск локального VPN:* проверяет порты `10808`, `10809`, `7890`, `2080` (V2Ray, Xray, Clash, Hiddify) и подключается сам.
-  3. *SmartDNS (Luna DNS / Comss DNS):* встроенный резолвер для обхода цензуры на уровне приложения.
-  4. *Резервные зеркала:* пул публичных реверс-прокси серверов.
-- 🪟 **Защита от знаков вопроса в квадратах `` в Windows CMD:**
-  - Автоматический перевод консоли в UTF-8 (`chcp 65001`).
-  - Специальный безопасный режим (`/theme safe`): аккуратные текстовые плашки `[OK]`, `[FAIL]`, `[GEMINI]`, `-->` и рамки `┌─┐│└─┘`, которые никогда не ломаются в стандартном CMD.
-- 📱 **Поддержка iPhone (100% бесплатно, без своего сервера):**
-  - Мобильный Web-терминал PWA на **GitHub Pages** (добавляется на домашний экран iOS).
-  - Поддержка запуска в бесплатном iOS-терминале **a-Shell**.
-- 🚀 **Облачная сборка бинарников (GitHub Actions):**
-  - Готовые `.exe` (64-бит и 32-бит для Windows), бинарники для macOS и Linux компилируются в облаке GitHub и доступны во вкладке Releases.
+[English Documentation Below](#english-overview)
 
 ---
 
-## 🚀 Быстрый старт
+## Главные возможности
 
-### Способ 1: Мгновенный запуск через NPX (Рекомендуется для Windows, macOS и Linux)
-> 💡 Не требует сборки `.exe`, не вызывает ложных срабатываний антивируса Windows Defender, автоматически ставит нужные библиотеки:
+- **Абсолютно бесплатно:** Официальный бесплатный ключ [Google AI Studio](https://aistudio.google.com/app/apikey) (15 запросов в минуту и 1,500 запросов в день на Flash-моделях с контекстом 1 000 000 токенов).
+- **Глобальная команда `geminicode`:** Установите один раз и запускайте ассистента в любой рабочей директории.
+- **Проверка доверия к рабочей области:** Как и в Claude Code, перед началом работы в новой папке запрашивается подтверждение безопасности.
+- **Инструменты разработчика:**
+  - `View`: чтение файлов с нумерацией строк.
+  - `Edit`: точечное редактирование с цветным Git-style diff перед сохранением.
+  - `FileCreate` и `FileDelete`: создание и удаление файлов.
+  - `Bash`: выполнение консольных команд с запросом подтверждения `[y/n/always]`.
+  - `Glob` и `Grep`: поиск по кодовой базе.
+- **Автономные субагенты (`/subagent`):** Planner (Архитектор), Coder (Кодер), Reviewer (Ревьюер), Tester (Тестировщик).
+- **Живой HUD квот:** Наглядный статус-бар с лимитами RPM и RPD.
+- **Защита Windows CMD от битых символов:** 100% безопасные ASCII-рамки и символы без знаков вопроса в квадратах.
+- **Умная сеть для РФ:** Автоматическое определение локальных прокси (V2Ray, Clash, Hiddify) и прямого доступа.
+- **Чистый открытый код без ложных срабатываний антивируса:** Никаких закрытых бинарников — только чистые скрипты Node.js и Python.
+- **Мобильный PWA на iPhone:** Веб-терминал на GitHub Pages для работы со смартфона.
+
+---
+
+## Быстрый старт
+
+### Вариант 1: Установка через NPM (Рекомендуется для всех ОС)
+
 ```bash
-npx github:evgeniynekroz/gemini-code
+# Устанавливаем глобально
+npm install -g github:evgeniynekroz/gemini-code
+
+# Заходим в ЛЮБУЮ папку с проектом и запускаем:
+geminicode
 ```
-*(Или для постоянной установки: `npm install -g github:evgeniynekroz/gemini-code && gemini-code`)*
+*(Или мгновенный запуск без постоянной установки: `npx github:evgeniynekroz/gemini-code`)*
 
 ---
 
-### Способ 2: Установка через Git и Pip (Python 3.8+)
+### Вариант 2: Установка через Git и Python (Windows / macOS / Linux)
 
 ```bash
-# Клонируем репозиторий
+# 1. Клонируем репозиторий
 git clone https://github.com/evgeniynekroz/gemini-code.git
 cd gemini-code
 
-# Устанавливаем в режиме разработки
+# 2. На Windows запускаем установщик (зарегистрирует команду geminicode):
+powershell -ExecutionPolicy Bypass -File .\install.ps1
+
+# Либо на macOS/Linux:
 pip install -e .
-
-# Запускаем!
-gemini-code
 ```
-*(На Windows также можно просто запустить `gemini-code.cmd`)*
+
+После установки просто откройте командную строку в любой нужной папке и напишите:
+```bash
+geminicode
+```
 
 ---
 
-### 🛡️ Информация об антивирусах (Windows Defender)
-Если вы скачиваете собранный бинарник `.exe` из раздела **Releases**, Windows Defender может выдать предупреждение `Trojan:Win32/Wacatac.B!ml`. 
-Это **100% ложное срабатывание (False Positive)** эвристики Microsoft на распаковщик PyInstaller для неподписанных бесплатных программ с открытым исходным кодом. Весь код проекта полностью открыт для аудита. Если вы не хотите добавлять `.exe` в исключения, используйте **Способ 1 (`npx github:evgeniynekroz/gemini-code`)** или **Способ 2 (`pip install`)** — на них антивирус не реагирует вовсе.
+## Первый запуск
+
+1. Выберите язык интерфейса: `[1] Русский` или `[2] English`.
+2. В браузере сразу откроется страница создания ключа: [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey).
+3. Скопируйте бесплатный ключ и вставьте в терминал (сохраняется мгновенно без сетевых задержек).
+4. Подтвердите доверие к текущей папке проекта `[y]`.
+5. Готово! Откроется чистый интерактивный интерфейс.
 
 ---
 
-### 🖥️ Первый запуск (Интерфейс в стиле Claude Code)
-1. При первом запуске выберите язык: `[1] Русский` или `[2] English`.
-2. Экран терминала сразу очистится от системного мусора и откроется страница [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey) в браузере.
-3. Скопируйте бесплатный ключ из Google AI Studio и вставьте в терминал.
-4. Откроется чистый интерактивный интерфейс Gemini Code с мониторингом квот, индикатором сети и поддержкой команд!
-
----
-
-## ⌨️ Список команд
+## Список команд
 
 | Команда | Описание |
 | :--- | :--- |
 | `/help` | Показать интерактивную справку по всем командам |
 | `/subagent <роль>` | Переключить субагента (`planner`, `coder`, `reviewer`, `tester`) |
-| `/model` | Интерактивный переключатель модели (`2.5-flash`, `2.5-pro`, `thinking`) |
+| `/model` | Переключатель модели (`2.5-flash`, `2.5-pro`, `thinking`) |
 | `/quota` | Подробная таблица текущих лимитов и суточного расхода квоты |
+| `/key` | Быстро изменить API-ключ Google AI Studio |
 | `/doctor` | Диагностика системы: пинг до Gemini, статус прокси, Git, Python |
 | `/init` | Создание файла `GEMINI.md` с инструкциями и правилами проекта |
 | `/review` | Моментальный аудит незакоммиченных изменений в коде |
 | `/commit` | Генерация понятного коммита по `git diff` и коммит в 1 клик |
 | `/undo` | Откат последней правки файла |
 | `/compact` | Сжатие истории диалога для экономии контекста |
-| `/theme` | Переключение между Modern Unicode и Safe-ASCII для Windows CMD |
+| `/theme` | Переключение стиля символов (Safe ASCII / Unicode) |
 | `/lang` | Переключение языка интерфейса (RU / EN) |
-| `/clear` | Очистка истории диалога |
+| `/clear` или `/cls` | Полная очистка экрана консоли и контекста |
 | `/exit` | Выход из программы |
 
 ---
 
-## 📱 Запуск на iPhone
+## Запуск на iPhone
 
 1. **Через GitHub Pages (Web-терминал PWA):**
-   - Откройте страницу репозитория на телефоне.
-   - В Safari нажмите кнопку *«Поделиться»* -> *«На экран „Домой“»*.
-   - Открывайте как обычное приложение, введите ключ в настройках (⚙) и пишите код на ходу!
+   - Откройте страницу репозитория на телефоне в Safari.
+   - Нажмите кнопку *«Поделиться»* -> *«На экран „Домой“»*.
+   - Открывайте как нативное приложение, укажите ключ в настройках и работайте с кодом.
 2. **Через приложение a-Shell:**
    - Установите бесплатное приложение **a-Shell** из App Store.
-   - Выполните: `pip install gemini-code-cli && gemini-code`.
+   - Выполните: `pip install geminicode && geminicode`.
 
 ---
 
-## ☕ Поддержать проект (Donations)
+## Поддержать проект (Donations)
 
-Если **Gemini Code** помогает вам в работе и экономит деньги на платных подписках — поддержите автора!
+Если **Gemini Code** помогает вам в работе и экономит деньги на платных подписках — поддержите автора!  
 🎯 **Текущий сбор:** **На нормальный рабочий ноутбук** (Цель: 35 000 ₽)
 
 - 🎁 **DonationAlerts:** **[donationalerts.com/r/nekrozdev](https://www.donationalerts.com/r/nekrozdev)**
 - 💎 **CryptoBot (USDT / TON / BTC / Любая сумма):** **[t.me/send?start=IVj4UTox7JMD](https://t.me/send?start=IVj4UTox7JMD)**
 
 ---
-## 🌍 English Overview
 
-**Gemini Code** is an open-source, completely free autonomous terminal coding assistant inspired by **Claude Code**, powered by **Google Gemini** via the Google AI Studio free tier.
+## English Overview
 
-### Key Highlights:
-- **Free Quota:** 15 RPM / 1,500 RPD on Flash models with a 1M token context window.
-- **Claude Code Tools:** `view_file`, diff-based `edit_file`, `create_file`, safe `run_command` with confirmations, `glob_files`, `grep_search`, and git operations.
-- **Specialized Subagents:** Planner, Coder, Reviewer, and Tester.
-- **Live Quota HUD:** Visual indicator of per-minute and per-day usage.
-- **Windows CMD Safe Mode:** Zero broken unicode characters in classic terminals.
-- **Mobile iPhone PWA:** 100% client-side web terminal deployed to GitHub Pages.
-- **Automated Cloud Releases:** GitHub Actions workflow builds standalone executables for Windows x64/x86, macOS, and Linux.
+**Gemini Code** (`geminicode`) is an open-source, completely free autonomous terminal coding assistant inspired by **Claude Code**, powered by **Google Gemini** via the Google AI Studio free tier.
 
-### Quick Start (EN):
+### Highlights:
+- **Global `geminicode` CLI:** Run in any directory on your computer.
+- **Workspace Trust Confirmation:** Confirm directory access before granting file operations.
+- **Instant Onboarding:** Fast key setup without network verification loops.
+- **Safe ASCII Windows CMD Support:** Zero broken characters or question-mark glyphs.
+- **Claude Code Style Tools:** File viewer, diff-based editor, command executor with confirmation, and autonomous subagents.
+
 ```bash
-git clone https://github.com/evgeniynekroz/gemini-code.git
-cd gemini-code
-pip install -e .
-gemini-code
+# Global install via npm:
+npm install -g github:evgeniynekroz/gemini-code
+
+# Open any project folder and run:
+geminicode
 ```
 
 ---
 
-## 📄 Лицензия
+## Лицензия
 
-Проект распространяется под открытой лицензией [MIT](LICENSE).
+Проект распространяется под открытой лицензией [MIT](LICENSE).  
 Автор: **evgeniynekroz**

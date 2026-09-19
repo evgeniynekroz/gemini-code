@@ -3,12 +3,12 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "gemini-code-cli"
+name = "geminicode"
 version = "1.0.0"
 authors = [
   { name="evgeniynekroz" },
 ]
-description = "⚡ Free, open-source terminal coding assistant inspired by Claude Code, powered by Google Gemini"
+description = "Free, open-source terminal coding assistant inspired by Claude Code, powered by Google Gemini"
 readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [
@@ -25,8 +25,8 @@ dependencies = [
 ]
 
 [project.scripts]
+geminicode = "gemini_code.cli:main"
 gemini-code = "gemini_code.cli:main"
-gemcode = "gemini_code.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["."]

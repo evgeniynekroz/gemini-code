@@ -6,6 +6,7 @@ Prevents broken square-with-question-mark glyphs in legacy Windows terminals.
 import os
 import sys
 import ctypes
+from rich import box
 
 def setup_windows_console():
     """Configure Windows console for UTF-8 and ANSI colors."""
@@ -48,7 +49,7 @@ def is_modern_terminal() -> bool:
     if any(var in os.environ for var in modern_env_vars):
         return True
     
-    # If running inside standard cmd.exe, default to safe mode
+    # Standard cmd.exe or legacy PowerShell
     return False
 
 class Symbols:
@@ -57,7 +58,8 @@ class Symbols:
     def __init__(self, mode: str = "auto"):
         setup_windows_console()
         if mode == "auto":
-            self.mode = "unicode" if is_modern_terminal() else "safe"
+            # On Windows, always default to safe mode unless explicitly overridden
+            self.mode = "safe" if sys.platform == "win32" else "unicode"
         else:
             self.mode = mode
         self._load_symbols()
@@ -71,17 +73,17 @@ class Symbols:
             # 100% safe ASCII and CP65001 compatible symbols for legacy Windows CMD
             self.SUCCESS = "[OK]"
             self.ERROR = "[FAIL]"
-            self.WARNING = "[WARN]"
-            self.INFO = "[INFO]"
-            self.GEMINI = "[GEMINI]"
-            self.USER = "[YOU]"
-            self.THINK = "[THINK]"
-            self.TOOL = "[TOOL]"
+            self.WARNING = "[!]"
+            self.INFO = "[*]"
+            self.GEMINI = "[Gemini]"
+            self.USER = "> "
+            self.THINK = "[Думаю...]"
+            self.TOOL = "[Инструмент]"
             self.CHECK = "[v]"
             self.CROSS = "[x]"
-            self.ARROW = "-->"
+            self.ARROW = "->"
             self.BULLET = "*"
-            self.QUESTION = "[?]"
+            self.QUESTION = "?"
             self.DOT = "."
             self.SPINNER = ["-", "\\", "|", "/"]
             self.BOX_TOP_LEFT = "+"
@@ -92,27 +94,31 @@ class Symbols:
             self.BOX_VERTICAL = "|"
         else:
             # Modern, stylish Unicode symbols for Windows Terminal, VS Code, macOS, Linux
-            self.SUCCESS = "✓"
-            self.ERROR = "✗"
-            self.WARNING = "▲"
-            self.INFO = "ℹ"
+            self.SUCCESS = "[OK]"
+            self.ERROR = "[FAIL]"
+            self.WARNING = "[!]"
+            self.INFO = "[*]"
             self.GEMINI = "✦"
-            self.USER = "❯"
+            self.USER = "> "
             self.THINK = "◆"
             self.TOOL = "⚙"
             self.CHECK = "✔"
             self.CROSS = "✖"
             self.ARROW = "→"
-            self.BULLET = "•"
+            self.BULLET = "*"
             self.QUESTION = "?"
             self.DOT = "·"
-            self.SPINNER = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
-            self.BOX_TOP_LEFT = "┌"
-            self.BOX_TOP_RIGHT = "┐"
-            self.BOX_BOTTOM_LEFT = "└"
-            self.BOX_BOTTOM_RIGHT = "┘"
-            self.BOX_HORIZONTAL = "─"
-            self.BOX_VERTICAL = "│"
+            self.SPINNER = ["-", "\\", "|", "/"]
+            self.BOX_TOP_LEFT = "+"
+            self.BOX_TOP_RIGHT = "+"
+            self.BOX_BOTTOM_LEFT = "+"
+            self.BOX_BOTTOM_RIGHT = "+"
+            self.BOX_HORIZONTAL = "-"
+            self.BOX_VERTICAL = "|"
+
+def get_box():
+    """Return safe box style for Rich panels."""
+    return box.ASCII if sym.mode == "safe" else box.SQUARE
 
 # Global singleton instance
 sym = Symbols()

@@ -10,7 +10,7 @@ from rich.syntax import Syntax
 from rich.table import Table
 from rich.text import Text
 
-from .symbols import sym
+from .symbols import sym, get_box
 
 console = Console(highlight=False)
 
@@ -41,6 +41,7 @@ def print_diff(diff_text: str, filename: str = ""):
         table,
         title=f"[bold cyan]{title}[/bold cyan]",
         border_style="cyan",
+        box=get_box(),
         subtitle=f"[green]+ addition[/green] | [red]- deletion[/red]",
     )
     console.print(panel)
@@ -64,6 +65,7 @@ def print_thinking(thought: str):
         Text(thought, style="italic magenta"),
         title=f"[magenta]{sym.THINK} Thinking[/magenta]",
         border_style="magenta",
+        box=get_box(),
     )
     console.print(panel)
 

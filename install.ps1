@@ -15,9 +15,24 @@ if (-not $pythonCmd) {
 }
 
 Write-Host "[INFO] Установка зависимостей через pip..." -ForegroundColor Green
-& $pythonCmd.Source -m pip install --upgrade pip
-& $pythonCmd.Source -m pip install -r requirements.txt
-& $pythonCmd.Source -m pip install -e .
+& $pythonCmd.Source -m pip install -r "$PSScriptRoot\requirements.txt"
+& $pythonCmd.Source -m pip install -e "$PSScriptRoot"
+
+# Register global command 'geminicode' into WindowsApps or npm directory (always on PATH)
+$installedGlobally = $false
+$appsDir = "$env:LOCALAPPDATA\Microsoft\WindowsApps"
+if (Test-Path $appsDir) {
+    Copy-Item -Force "$PSScriptRoot\geminicode.cmd" "$appsDir\geminicode.cmd"
+    Copy-Item -Force "$PSScriptRoot\geminicode.cmd" "$appsDir\gemini-code.cmd"
+    $installedGlobally = $true
+}
+
+$npmDir = "$env:APPDATA\npm"
+if (Test-Path $npmDir) {
+    Copy-Item -Force "$PSScriptRoot\geminicode.cmd" "$npmDir\geminicode.cmd"
+    Copy-Item -Force "$PSScriptRoot\geminicode.cmd" "$npmDir\gemini-code.cmd"
+    $installedGlobally = $true
+}
 
 Write-Host "`n[OK] Gemini Code успешно установлен!" -ForegroundColor Green
-Write-Host "Запустите команду: gemini-code" -ForegroundColor Cyan
+Write-Host "Теперь откройте терминал в ЛЮБОЙ папке и запустите: geminicode" -ForegroundColor Cyan

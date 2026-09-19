@@ -6,7 +6,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 from .renderer import console
-from .symbols import sym
+from .symbols import sym, get_box
 from ..config import config
 from ..quota.tracker import quota_tracker
 from ..i18n import t
@@ -27,6 +27,7 @@ def print_banner():
     panel = Panel(
         Text.assemble(logo_text, "\n", subtitle),
         border_style="cyan",
+        box=get_box(),
         subtitle=f"[dim]v1.0.0 | Open-Source (evgeniynekroz/gemini-code)[/dim]",
     )
     console.print(panel)
@@ -48,5 +49,5 @@ def print_status_bar(model_id: str = ""):
         f"[bold]Net:[/bold] {config.proxy_mode.upper()}",
     )
     
-    panel = Panel(table, border_style="dim", padding=(0, 1))
+    panel = Panel(table, border_style="dim", box=get_box(), padding=(0, 1))
     console.print(panel)

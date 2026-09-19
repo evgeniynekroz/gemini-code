@@ -19,6 +19,7 @@ SLASH_COMMANDS = [
     "/model",
     "/quota",
     "/limits",
+    "/key",
     "/subagent",
     "/doctor",
     "/init",
@@ -30,6 +31,7 @@ SLASH_COMMANDS = [
     "/theme",
     "/lang",
     "/clear",
+    "/cls",
     "/exit",
     "/quit",
 ]
@@ -53,7 +55,7 @@ class Prompter:
             self.session = None
 
     def get_input(self, placeholder: str = "") -> str:
-        prompt_marker = f"{sym.USER} "
+        prompt_marker = f"{sym.USER.strip()} "
         if self.session:
             try:
                 return self.session.prompt(prompt_marker)

@@ -1,11 +1,11 @@
 {
-  "name": "gemini-code-cli",
+  "name": "geminicode",
   "version": "1.0.0",
-  "description": "⚡ Free, open-source terminal coding assistant inspired by Claude Code, powered by Google Gemini",
+  "description": "Free, open-source terminal coding assistant inspired by Claude Code, powered by Google Gemini",
   "main": "bin/gemini-code.js",
   "bin": {
-    "gemini-code": "./bin/gemini-code.js",
-    "gemcode": "./bin/gemini-code.js"
+    "geminicode": "./bin/gemini-code.js",
+    "gemini-code": "./bin/gemini-code.js"
   },
   "scripts": {
     "start": "node ./bin/gemini-code.js"
@@ -15,9 +15,9 @@
     "url": "git+https://github.com/evgeniynekroz/gemini-code.git"
   },
   "keywords": [
+    "geminicode",
     "gemini",
     "claude-code",
-    "coding-assistant",
     "cli",
     "ai"
   ],
