@@ -8,6 +8,7 @@ import asyncio
 from pathlib import Path
 from rich.table import Table
 from rich.panel import Panel
+from rich.text import Text
 
 from .config import config
 from .i18n import t, i18n
@@ -29,16 +30,55 @@ from .quota.models import AVAILABLE_MODELS, list_model_choices
 from .agent.agent import Agent
 from .tools.git_tools import git_status, git_diff, git_undo
 
-def run_onboarding():
-    """First-run setup wizard: language, network check, API key."""
-    setup_windows_console()
-    console.print(f"\n[bold cyan]{sym.GEMINI} {t('onboarding_title')}[/bold cyan]\n")
+import webbrowser
+import os
 
-    # 1. Language selection
-    console.print(t("choose_lang"))
-    console.print("  [bold cyan]1[/bold cyan] - Русский")
-    console.print("  [bold cyan]2[/bold cyan] - English")
-    lang_choice = input("Select [1/2] (default: 1): ").strip()
+def clear_screen():
+    """Wipe terminal screen completely across Windows and POSIX."""
+    if sys.platform == "win32":
+        os.system("cls")
+    else:
+        os.system("clear")
+    console.clear()
+
+def set_terminal_title(title: str = "Gemini Code"):
+    """Set window title in console."""
+    if sys.platform == "win32":
+        try:
+            import ctypes
+            ctypes.windll.kernel32.SetConsoleTitleW(title)
+        except Exception:
+            pass
+    else:
+        sys.stdout.write(f"\x1b]0;{title}\x07")
+        sys.stdout.flush()
+
+async def run_onboarding():
+    """First-run setup wizard: language, browser key opening, network check, API key."""
+    setup_windows_console()
+    set_terminal_title("Gemini Code - Настройка")
+    clear_screen()
+
+    # Title & welcome panel
+    welcome_panel = Panel(
+        Text.assemble(
+            ("⚡ GEMINI CODE\n", "bold cyan"),
+            ("Терминальный ИИ-ассистент разработчика (v1.0.0)\n\n", "bold green"),
+            ("Выберите язык интерфейса / Select language:\n", "bold white"),
+            ("  [1] Русский (по умолчанию)\n", "cyan"),
+            ("  [2] English", "cyan"),
+        ),
+        border_style="cyan",
+        title="[bold cyan]Добро пожаловать / Welcome[/bold cyan]",
+        padding=(1, 2),
+    )
+    console.print(welcome_panel)
+
+    try:
+        lang_choice = input("\nВыбор / Select [1/2] (1): ").strip()
+    except (KeyboardInterrupt, EOFError):
+        sys.exit(0)
+
     if lang_choice == "2":
         config.set("language", "en")
         i18n.set_lang("en")
@@ -46,9 +86,56 @@ def run_onboarding():
         config.set("language", "ru")
         i18n.set_lang("ru")
 
-    console.print(f"[green]{sym.SUCCESS} {t('lang_selected')}[/green]\n")
+    # WIPE SCREEN IMMEDIATELY after language selection!
+    clear_screen()
 
-    # 2. Connectivity check
+    # Open Google AI Studio page automatically in browser
+    try:
+        webbrowser.open("https://aistudio.google.com/app/apikey")
+    except Exception:
+        pass
+
+    # Show clean authorization panel
+    if config.language == "ru":
+        auth_text = Text.assemble(
+            ("🔑 Авторизация Google Gemini (AI Studio)\n\n", "bold cyan"),
+            ("Страница получения бесплатного ключа открыта в вашем браузере:\n", "white"),
+            ("👉 https://aistudio.google.com/app/apikey\n\n", "bold underline cyan"),
+            ("1. Войдите с вашим Google-аккаунтом\n", "dim white"),
+            ("2. Нажмите синюю кнопку ", "dim white"),
+            ("«Create API key»\n", "bold yellow"),
+            ("3. Скопируйте созданный ключ (он 100% бесплатный, карты не нужны)\n", "dim white"),
+            ("4. Вставьте ключ в строку ниже и нажмите Enter\n", "dim white"),
+        )
+        auth_title = "[bold cyan]Первоначальная настройка Gemini Code[/bold cyan]"
+        prompt_label = "\nВведите ваш API-ключ Google AI Studio: "
+        checking_label = "Проверяем ключ через Google API..."
+        blocked_msg = "Google блокирует прямой доступ из вашего региона (User location is not supported). Мы сохранили ключ и настроили прокси/зеркало."
+    else:
+        auth_text = Text.assemble(
+            ("🔑 Google Gemini (AI Studio) Authorization\n\n", "bold cyan"),
+            ("The API key generation page has been opened in your browser:\n", "white"),
+            ("👉 https://aistudio.google.com/app/apikey\n\n", "bold underline cyan"),
+            ("1. Sign in with your Google account\n", "dim white"),
+            ("2. Click the blue button ", "dim white"),
+            ("«Create API key»\n", "bold yellow"),
+            ("3. Copy the generated key (100% free tier, no credit card required)\n", "dim white"),
+            ("4. Paste the key in the prompt below and press Enter\n", "dim white"),
+        )
+        auth_title = "[bold cyan]Initial Setup for Gemini Code[/bold cyan]"
+        prompt_label = "\nEnter your Google AI Studio API key: "
+        checking_label = "Verifying API key with Google AI Studio..."
+        blocked_msg = "Google blocks direct access from your region. We saved your key and enabled proxy."
+
+    auth_panel = Panel(
+        auth_text,
+        border_style="cyan",
+        title=auth_title,
+        padding=(1, 2),
+    )
+    console.print(auth_panel)
+
+    # Connectivity check
     console.print(f"[cyan]{sym.INFO} {t('checking_connection')}[/cyan]")
     res = diagnose_connection()
     if res.mode == "direct":
@@ -61,22 +148,32 @@ def run_onboarding():
         console.print(f"[yellow]{sym.WARNING} {t('conn_blocked')}[/yellow]")
         console.print(f"[yellow]{sym.WARNING} {res.details}[/yellow]")
 
-    # 3. API Key prompt
-    console.print()
+    # API Key prompt
     while not config.api_key:
-        api_key = input(t("api_key_prompt")).strip()
+        try:
+            api_key = input(prompt_label).strip().strip('"').strip("'")
+        except (KeyboardInterrupt, EOFError):
+            console.print("\n[dim]Отменено пользователем.[/dim]")
+            sys.exit(0)
+
         if not api_key:
             continue
-        
-        # Test key
+
+        console.print(f"[dim]{checking_label}[/dim]")
         try:
             client = GeminiClient(api_key=api_key)
-            asyncio.run(client.list_models())
+            await client.list_models()
             config.set("api_key", api_key)
             console.print(f"[bold green]{sym.SUCCESS} {t('api_key_saved')}[/bold green]\n")
             break
         except Exception as e:
-            print_error(f"{t('api_key_invalid')} ({str(e)})")
+            err_str = str(e)
+            if "User location is not supported" in err_str or "FAILED_PRECONDITION" in err_str:
+                console.print(f"[bold yellow]{sym.WARNING} {blocked_msg}[/bold yellow]\n")
+                config.set("api_key", api_key)
+                break
+            else:
+                print_error(f"{t('api_key_invalid')} ({err_str})")
 
 def show_help():
     """Display table of all commands."""
@@ -188,14 +285,21 @@ This repository uses Gemini Code as a terminal AI coding assistant.
 
 async def main_loop():
     setup_windows_console()
+    set_terminal_title("Gemini Code")
     i18n.set_lang(config.language)
     sym.set_mode(config.theme if config.theme != "auto" else ("unicode" if sys.platform != "win32" else "safe"))
 
     if config.is_first_run():
-        run_onboarding()
+        await run_onboarding()
 
+    clear_screen()
+    set_terminal_title(f"Gemini Code - {os.path.basename(os.getcwd())}")
     print_banner()
     print_status_bar()
+
+    cwd = os.getcwd()
+    console.print(f"[dim white]📁 {cwd}[/dim white]")
+    console.print(f"[dim]💡 Введите запрос или [cyan]/help[/cyan] для списка команд (выход: [cyan]/exit[/cyan])[/dim]\n")
 
     client = GeminiClient()
     agent = Agent(client)
@@ -283,8 +387,13 @@ async def main_loop():
                 i18n.set_lang(new_lang)
                 print_success(t("lang_selected"))
 
-            elif cmd == "/clear":
+            elif cmd in ("/clear", "/cls"):
                 agent.context.clear()
+                clear_screen()
+                print_banner()
+                print_status_bar()
+                console.print(f"[dim white]📁 {os.getcwd()}[/dim white]")
+                console.print(f"[dim]💡 Введите запрос или [cyan]/help[/cyan] для списка команд[/dim]\n")
                 print_info(t("context_cleared"))
 
             else:
