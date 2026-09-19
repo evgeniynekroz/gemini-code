@@ -70,16 +70,16 @@ class Symbols:
 
     def _load_symbols(self):
         if self.mode == "safe":
-            # 100% safe ASCII and CP65001 compatible symbols for legacy Windows CMD
+            # 100% safe ASCII symbols for legacy Windows CMD (no bracketed words that clash with Rich markup)
             self.SUCCESS = "[OK]"
             self.ERROR = "[FAIL]"
             self.WARNING = "[!]"
             self.INFO = "[*]"
-            self.GEMINI = "[Gemini]"
+            self.GEMINI = "*"
             self.USER = "> "
-            self.THINK = "[Думаю...]"
-            self.TOOL = "[Инструмент]"
-            self.CHECK = "[v]"
+            self.THINK = "*"
+            self.TOOL = "*"
+            self.CHECK = "[OK]"
             self.CROSS = "[x]"
             self.ARROW = "->"
             self.BULLET = "*"
@@ -93,28 +93,28 @@ class Symbols:
             self.BOX_HORIZONTAL = "-"
             self.BOX_VERTICAL = "|"
         else:
-            # Modern, stylish Unicode symbols for Windows Terminal, VS Code, macOS, Linux
-            self.SUCCESS = "[OK]"
-            self.ERROR = "[FAIL]"
-            self.WARNING = "[!]"
-            self.INFO = "[*]"
+            # Modern, stylish Unicode symbols for Windows Terminal, VS Code, macOS, Linux (Claude Code style)
+            self.SUCCESS = "✔"
+            self.ERROR = "✖"
+            self.WARNING = "!"
+            self.INFO = "ℹ"
             self.GEMINI = "✦"
-            self.USER = "> "
+            self.USER = "❯ "
             self.THINK = "◆"
             self.TOOL = "⚙"
             self.CHECK = "✔"
             self.CROSS = "✖"
             self.ARROW = "→"
-            self.BULLET = "*"
+            self.BULLET = "●"
             self.QUESTION = "?"
             self.DOT = "·"
             self.SPINNER = ["-", "\\", "|", "/"]
-            self.BOX_TOP_LEFT = "+"
-            self.BOX_TOP_RIGHT = "+"
-            self.BOX_BOTTOM_LEFT = "+"
-            self.BOX_BOTTOM_RIGHT = "+"
-            self.BOX_HORIZONTAL = "-"
-            self.BOX_VERTICAL = "|"
+            self.BOX_TOP_LEFT = "┌"
+            self.BOX_TOP_RIGHT = "┐"
+            self.BOX_BOTTOM_LEFT = "└"
+            self.BOX_BOTTOM_RIGHT = "┘"
+            self.BOX_HORIZONTAL = "─"
+            self.BOX_VERTICAL = "│"
 
 def get_box():
     """Return safe box style for Rich panels."""

@@ -22,15 +22,25 @@ class ContextManager:
         })
 
     def add_tool_response(self, tool_name: str, response_data: Any):
-        self.messages.append({
-            "role": "function",
-            "parts": [{
-                "functionResponse": {
-                    "name": tool_name,
-                    "response": {"output": response_data},
-                }
-            }]
-        })
+        """Append a function response part. If previous message is function, merge part to avoid consecutive function turns."""
+        part = {
+            "functionResponse": {
+                "name": tool_name,
+                "response": {"output": response_data},
+            }
+        }
+        if self.messages and self.messages[-1].get("role") == "function":
+            self.messages[-1]["parts"].append(part)
+        else:
+            self.messages.append({
+                "role": "function",
+                "parts": [part],
+            })
+
+    def add_tool_responses(self, responses: List[Dict[str, Any]]):
+        """Add multiple function responses in a single turn."""
+        for r in responses:
+            self.add_tool_response(r["name"], r.get("output", r.get("response", {})))
 
     def estimate_tokens(self) -> int:
         total_chars = 0

@@ -1,5 +1,5 @@
 """
-Interactive terminal prompter with autocompletion, command history, and async execution.
+Interactive terminal prompter with autocompletion, file path completion, and history (Claude Code style).
 """
 
 import sys
@@ -9,20 +9,27 @@ from ..config import CONFIG_DIR
 
 HISTORY_FILE = CONFIG_DIR / "history.txt"
 
+from .symbols import sym
+
 SLASH_COMMANDS = [
     "/help",
     "/model",
+    "/models",
     "/quota",
     "/limits",
+    "/cost",
     "/key",
-    "/subagent",
+    "/login",
+    "/proxy",
     "/doctor",
     "/init",
     "/review",
     "/commit",
+    "/diff",
     "/undo",
     "/compact",
-    "/proxy",
+    "/subagent",
+    "/config",
     "/theme",
     "/lang",
     "/clear",
@@ -38,36 +45,49 @@ class Prompter:
         try:
             from prompt_toolkit import PromptSession
             from prompt_toolkit.history import FileHistory
-            from prompt_toolkit.completion import WordCompleter
+            from prompt_toolkit.completion import WordCompleter, PathCompleter, merge_completers
             from prompt_toolkit.styles import Style
 
-            completer = WordCompleter(SLASH_COMMANDS, ignore_case=True, match_middle=False)
-            style = Style.from_dict({"prompt": "cyan bold"})
+            command_completer = WordCompleter(SLASH_COMMANDS, ignore_case=True, match_middle=False)
+            path_completer = PathCompleter(expanduser=True)
+            combined_completer = merge_completers([command_completer, path_completer])
+
+            style = Style.from_dict({
+                "prompt": "cyan bold",
+                "prompt.symbol": "cyan bold",
+            })
 
             self.session = PromptSession(
                 history=FileHistory(str(HISTORY_FILE)),
-                completer=completer,
+                completer=combined_completer,
                 style=style,
             )
         except Exception:
             self.session = None
 
     async def get_input(self, placeholder: str = "") -> str:
-        prompt_marker = "> "
+        # Iconic Claude Code prompt glyph ❯ or >
+        prompt_char = sym.USER
+        prompt_marker = [("class:prompt.symbol", prompt_char)]
         if self.session:
             try:
-                # MUST USE prompt_async inside active asyncio loop!
-                return await self.session.prompt_async(prompt_marker)
-            except (KeyboardInterrupt, EOFError):
+                text = await self.session.prompt_async(prompt_marker)
+                return text.strip()
+            except KeyboardInterrupt:
+                # Ctrl+C cancels the current input line, does not quit the application!
+                return ""
+            except EOFError:
                 return "/exit"
             except Exception:
-                # If prompt_toolkit fails, disable and fallback
                 self.session = None
 
         # Bulletproof fallback using built-in input in thread pool
         try:
-            return await asyncio.to_thread(input, prompt_marker)
-        except (KeyboardInterrupt, EOFError):
+            text = await asyncio.to_thread(input, prompt_char)
+            return text.strip()
+        except KeyboardInterrupt:
+            return ""
+        except EOFError:
             return "/exit"
 
 prompter = Prompter()
