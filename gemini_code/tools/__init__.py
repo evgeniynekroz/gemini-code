@@ -80,6 +80,7 @@ registry.register(BaseTool(
         "properties": {
             "command": {"type": "string", "description": "The exact shell command line string to run"},
             "timeout": {"type": "integer", "description": "Timeout in seconds (default: 60)"},
+            "cwd": {"type": "string", "description": "Working directory to run command in (optional)"},
         },
         "required": ["command"],
     },

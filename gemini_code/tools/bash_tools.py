@@ -6,9 +6,9 @@ import sys
 import asyncio
 import subprocess
 import time
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
-async def run_command(command: str, timeout: int = 60) -> Dict[str, Any]:
+async def run_command(command: str, timeout: int = 60, cwd: Optional[str] = None) -> Dict[str, Any]:
     """
     Execute a terminal command using PowerShell (Windows) or Bash (Unix).
     """
@@ -23,6 +23,7 @@ async def run_command(command: str, timeout: int = 60) -> Dict[str, Any]:
             *shell_cmd,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
+            cwd=cwd,
         )
 
         try:

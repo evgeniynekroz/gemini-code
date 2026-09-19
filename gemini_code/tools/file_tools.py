@@ -66,27 +66,52 @@ def compute_diff(original: str, modified: str, filename: str) -> str:
 def edit_file(path: str, old_text: str, new_text: str) -> Dict[str, Any]:
     """
     Replace unique occurrence of old_text with new_text and calculate unified diff.
+    Handles Windows CRLF vs Unix LF normalization seamlessly.
     """
     target = Path(path)
     if not target.exists():
         return {"error": f"File not found: {path}"}
 
     try:
-        with open(target, "r", encoding="utf-8") as f:
-            content = f.read()
+        with open(target, "r", encoding="utf-8", errors="replace", newline="") as f:
+            raw_content = f.read()
 
-        if old_text not in content:
-            return {"error": f"Target content not found in file: {path}"}
+        is_crlf = "\r\n" in raw_content
+        content = raw_content.replace("\r\n", "\n")
+        normalized_old = old_text.replace("\r\n", "\n")
+        normalized_new = new_text.replace("\r\n", "\n")
 
-        count = content.count(old_text)
-        if count > 1:
-            return {"error": f"Target content is ambiguous (found {count} occurrences in {path}). Provide more surrounding context."}
+        if normalized_old not in content:
+            # Try strip trailing whitespace on each line as fallback
+            stripped_content = "\n".join(l.rstrip() for l in content.split("\n"))
+            stripped_old = "\n".join(l.rstrip() for l in normalized_old.split("\n"))
+            if stripped_old in stripped_content:
+                # Found with stripped lines! Replace using stripped mapping
+                count = stripped_content.count(stripped_old)
+                if count > 1:
+                    return {"error": f"Target content is ambiguous ({count} occurrences found in {path}). Provide more surrounding context."}
+                
+                # Locate and replace
+                idx = stripped_content.find(stripped_old)
+                prefix_lines = stripped_content[:idx].count("\n")
+                old_line_count = stripped_old.count("\n") + 1
+                all_orig_lines = content.split("\n")
+                new_content_lines = all_orig_lines[:prefix_lines] + normalized_new.split("\n") + all_orig_lines[prefix_lines + old_line_count:]
+                new_content = "\n".join(new_content_lines)
+            else:
+                return {"error": f"Target content not found in file: {path}"}
+        else:
+            count = content.count(normalized_old)
+            if count > 1:
+                return {"error": f"Target content is ambiguous (found {count} occurrences in {path}). Provide more surrounding context."}
+            new_content = content.replace(normalized_old, normalized_new, 1)
 
-        new_content = content.replace(old_text, new_text, 1)
         diff = compute_diff(content, new_content, target.name)
 
-        with open(target, "w", encoding="utf-8") as f:
-            f.write(new_content)
+        # Restore CRLF if file was CRLF originally
+        final_write = new_content.replace("\n", "\r\n") if is_crlf else new_content
+        with open(target, "w", encoding="utf-8", newline="") as f:
+            f.write(final_write)
 
         return {
             "success": True,
