@@ -47,6 +47,11 @@ def test_endpoint(endpoint: str, proxy: Optional[str] = None, timeout: float = 3
             resp = client.get(test_url)
             latency = int((time.time() - start_time) * 1000)
             text = resp.text
+            ctype = resp.headers.get("content-type", "")
+
+            # If response is HTML or not JSON, it is NOT a Gemini API endpoint
+            if "application/json" not in ctype and not text.strip().startswith("{"):
+                return None
 
             if "User location is not supported" in text or "FAILED_PRECONDITION" in text:
                 return {"unblocked": False, "blocked": True, "latency": latency, "text": text}
