@@ -93,15 +93,27 @@ jobs:
           name: Gemini Code v1.0.0 (Windows 64/32-bit, macOS, Linux)
           body: |
             ## ⚡ Gemini Code v1.0.0 Release
-            
+
+            ### 🚀 Рекомендуемый запуск через NPM (Без скачивания .exe и 0% ложных срабатываний антивируса):
+            ```bash
+            npx github:evgeniynekroz/gemini-code
+            ```
+
+            ---
+
             ### 📦 Готовые сборки для скачивания:
             - 🪟 **[gemini-code-windows-x64.exe](https://github.com/evgeniynekroz/gemini-code/releases/download/v1.0.0/gemini-code-windows-x64.exe)** — Windows 64-бит
             - 🪟 **[gemini-code-windows-x86.exe](https://github.com/evgeniynekroz/gemini-code/releases/download/v1.0.0/gemini-code-windows-x86.exe)** — Windows 32-бит
             - 🍏 **[gemini-code-macos](https://github.com/evgeniynekroz/gemini-code/releases/download/v1.0.0/gemini-code-macos)** — Apple macOS
             - 🐧 **[gemini-code-linux-x64](https://github.com/evgeniynekroz/gemini-code/releases/download/v1.0.0/gemini-code-linux-x64)** — Linux
             
+            > 💡 **Для пользователей Windows:** Автономные `.exe` файлы, упакованные через PyInstaller без платного сертификата Microsoft, могут вызывать ложные срабатывания Windows Defender (`Wacatac.B!ml`). Это стандартное ложное срабатывание для PyInstaller. Проект полностью с открытым исходным кодом! Рекомендуем запускать через `npx github:evgeniynekroz/gemini-code` или `pip install`.
+            
+            ---
+
             ### ☕ Поддержать автора:
-            - **DonationAlerts:** https://www.donationalerts.com/r/nekrozdev
-            - **CryptoBot:** `@send @NekrozDEV` в Telegram
+            🎯 **Цель сбора:** 35 000 ₽ на покупку рабочего ноутбука
+            - 🎁 **DonationAlerts:** [donationalerts.com/r/nekrozdev](https://www.donationalerts.com/r/nekrozdev)
+            - 💎 **CryptoBot (USDT / TON / BTC):** [t.me/send?start=IVj4UTox7JMD](https://t.me/send?start=IVj4UTox7JMD)
           draft: false
           prerelease: false

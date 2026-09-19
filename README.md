@@ -42,7 +42,7 @@
   2. *Автопоиск локального VPN:* проверяет порты `10808`, `10809`, `7890`, `2080` (V2Ray, Xray, Clash, Hiddify) и подключается сам.
   3. *SmartDNS (Luna DNS / Comss DNS):* встроенный резолвер для обхода цензуры на уровне приложения.
   4. *Резервные зеркала:* пул публичных реверс-прокси серверов.
-- 🪟 **Защита от знаков вопроса в квадратах [?] в Windows CMD:**
+- 🪟 **Защита от знаков вопроса в квадратах `` в Windows CMD:**
   - Автоматический перевод консоли в UTF-8 (`chcp 65001`).
   - Специальный безопасный режим (`/theme safe`): аккуратные текстовые плашки `[OK]`, `[FAIL]`, `[GEMINI]`, `-->` и рамки `┌─┐│└─┘`, которые никогда не ломаются в стандартном CMD.
 - 📱 **Поддержка iPhone (100% бесплатно, без своего сервера):**
@@ -55,25 +55,43 @@
 
 ## 🚀 Быстрый старт
 
-### 1. Установка через Git и Pip
+### Способ 1: Мгновенный запуск через NPX (Рекомендуется для Windows, macOS и Linux)
+> 💡 Не требует сборки `.exe`, не вызывает ложных срабатываний антивируса Windows Defender, автоматически ставит нужные библиотеки:
+```bash
+npx github:evgeniynekroz/gemini-code
+```
+*(Или для постоянной установки: `npm install -g github:evgeniynekroz/gemini-code && gemini-code`)*
+
+---
+
+### Способ 2: Установка через Git и Pip (Python 3.8+)
 
 ```bash
 # Клонируем репозиторий
 git clone https://github.com/evgeniynekroz/gemini-code.git
 cd gemini-code
 
-# Устанавливаем зависимости
+# Устанавливаем в режиме разработки
 pip install -e .
 
 # Запускаем!
 gemini-code
 ```
+*(На Windows также можно просто запустить `gemini-code.cmd`)*
 
-### 2. Первый запуск (Онбординг)
-1. Выберите язык: `[1] Русский` или `[2] English`.
-2. Программа проверит подключение к серверам Google Gemini.
-3. Получите бесплатный ключ на [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey) и вставьте в консоль.
-4. Готово! Появится статус-бар и приглашение к работе.
+---
+
+### 🛡️ Информация об антивирусах (Windows Defender)
+Если вы скачиваете собранный бинарник `.exe` из раздела **Releases**, Windows Defender может выдать предупреждение `Trojan:Win32/Wacatac.B!ml`. 
+Это **100% ложное срабатывание (False Positive)** эвристики Microsoft на распаковщик PyInstaller для неподписанных бесплатных программ с открытым исходным кодом. Весь код проекта полностью открыт для аудита. Если вы не хотите добавлять `.exe` в исключения, используйте **Способ 1 (`npx github:evgeniynekroz/gemini-code`)** или **Способ 2 (`pip install`)** — на них антивирус не реагирует вовсе.
+
+---
+
+### 🖥️ Первый запуск (Интерфейс в стиле Claude Code)
+1. При первом запуске выберите язык: `[1] Русский` или `[2] English`.
+2. Экран терминала сразу очистится от системного мусора и откроется страница [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey) в браузере.
+3. Скопируйте бесплатный ключ из Google AI Studio и вставьте в терминал.
+4. Откроется чистый интерактивный интерфейс Gemini Code с мониторингом квот, индикатором сети и поддержкой команд!
 
 ---
 
@@ -112,14 +130,13 @@ gemini-code
 
 ## ☕ Поддержать проект (Donations)
 
-Если **Gemini Code** помогает вам в работе и экономит деньги на платных подписках — поддержите автора!  
+Если **Gemini Code** помогает вам в работе и экономит деньги на платных подписках — поддержите автора!
 🎯 **Текущий сбор:** **На нормальный рабочий ноутбук** (Цель: 35 000 ₽)
 
 - 🎁 **DonationAlerts:** **[donationalerts.com/r/nekrozdev](https://www.donationalerts.com/r/nekrozdev)**
 - 💎 **CryptoBot (USDT / TON / BTC / Любая сумма):** **[t.me/send?start=IVj4UTox7JMD](https://t.me/send?start=IVj4UTox7JMD)**
 
 ---
-
 ## 🌍 English Overview
 
 **Gemini Code** is an open-source, completely free autonomous terminal coding assistant inspired by **Claude Code**, powered by **Google Gemini** via the Google AI Studio free tier.
