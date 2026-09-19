@@ -57,24 +57,39 @@ geminicode
 
 ---
 
-### Вариант 2: Установка через Git и Python (Windows / macOS / Linux)
+### Вариант 2: Мгновенная установка на Windows через PowerShell (1 команда)
+
+Откройте PowerShell и вставьте одну строку:
+```powershell
+powershell -ExecutionPolicy Bypass -c "irm https://raw.githubusercontent.com/evgeniynekroz/gemini-code/main/install.ps1 | iex"
+```
+*(Скрипт сам установит зависимости и зарегистрирует команду `geminicode` в системном `PATH`)*.
+
+---
+
+### Вариант 3: Ручная установка через Git и Python (Windows / macOS / Linux)
 
 ```bash
-# 1. Клонируем репозиторий
+# Клонируем репозиторий
 git clone https://github.com/evgeniynekroz/gemini-code.git
 cd gemini-code
 
-# 2. На Windows запускаем установщик (зарегистрирует команду geminicode):
+# На Windows запускаем установщик:
 powershell -ExecutionPolicy Bypass -File .\install.ps1
 
 # Либо на macOS/Linux:
 pip install -e .
 ```
 
-После установки просто откройте командную строку в любой нужной папке и напишите:
+---
+
+### Как запускать
+После любой из установок выше команда **`geminicode`** доступна **в любой папке компьютера**!  
+Просто перейдите в папку с вашим проектом в терминале и напишите:
 ```bash
 geminicode
 ```
+Рабочая область Gemini Code автоматически привяжется именно к этой папке.
 
 ---
 
